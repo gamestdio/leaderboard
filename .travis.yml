@@ -1,0 +1,10 @@
+language: node_js
+node_js:
+  - 8
+  - 9
+  - 10
+install:
+  - 'npm install'
+script:
+  - npm run tslint
+  - './node_modules/.bin/_mocha --require ts-node/register test/**Test.ts'
