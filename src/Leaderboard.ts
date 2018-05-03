@@ -20,23 +20,19 @@ export class Leaderboard {
         this.db = db;
     }
 
-    public create(leaderboardId: string, opts?: CreateOptions) {
-        return new Promise((resolve, reject) => {
-            const collection = this.getCollection(leaderboardId);
+    public async create(leaderboardId: string, opts?: CreateOptions): Promise<void> {
+        const collection = this.getCollection(leaderboardId);
 
-            const spec = (opts.ttl)
-                ? { createdAt: 1 }
-                : { expireAt: 1 };
+        const spec = (opts.ttl)
+            ? { createdAt: 1 }
+            : { expireAt: 1 };
 
-            const options = (opts.ttl)
-                ? { expireAfterSeconds: opts.ttl }
-                : { expireAfterSeconds: 0 };
+        const options = (opts.ttl)
+            ? { expireAfterSeconds: opts.ttl }
+            : { expireAfterSeconds: 0 };
 
-            collection.createIndex(spec, options, (err, result) => {
-                if (err) { return reject(err); }
-                resolve(result);
-            });
-        });
+        await collection.createIndex(spec, options);
+        await collection.createIndex({ score: -1 });
     }
 
     public destroy(leaderboardId: string) {

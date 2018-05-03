@@ -19,8 +19,9 @@ describe("Leaderboard", () => {
     after(() => client.close());
 
     it("should create a new leaderboard", async () => {
-        let daily = await leaderboard.create("daily", { ttl: 1 * 60 * 60 * 24 });
-        assert.equal(daily, "createdAt_1");
+        await leaderboard.create("daily", { ttl: 1 * 60 * 60 * 24 });
+        const indexes = await db.collection("lb_daily").indexes();
+        assert.equal(indexes.length, 3);
     });
 
     it("should drop leaderboard", async () => {
