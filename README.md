@@ -45,7 +45,7 @@ leaderboard.create("month", { ttl: 1 * 60 * 60 * 24 * 30 });
 ### Inserting scores into the leaderboard
 
 ```typescript
-leaderboard.store("day", { score: 50, userId: "unique user id here" });
+leaderboard.store("day", { id: "unique user id here", score: 50 });
 ```
 
 ### Querying for scores

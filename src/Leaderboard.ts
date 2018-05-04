@@ -9,6 +9,7 @@ export interface ListOptions {
 }
 
 export interface RecordOptions {
+    id: any;
     score: number;
     expireAt?: number;
 }
@@ -33,17 +34,34 @@ export class Leaderboard {
 
         await collection.createIndex(spec, options);
         await collection.createIndex({ score: -1 });
+        await collection.createIndex({ id: 1 });
     }
 
-    public destroy(leaderboardId: string) {
-        return this.getCollection(leaderboardId).drop();
+    public async destroy(leaderboardId: string) {
+        const collection = this.getCollection(leaderboardId);
+        await collection.dropIndexes();
+        return collection.drop();
     }
 
     public record(leaderboardId: string, row: any & RecordOptions, expireAt?: number): Promise<any> {
+        const id = row.id;
+        delete row.id;
+
+        const score = row.score;
+        delete row.score;
+
+        const update: any = { $inc: { score } }
+
+        if (Object.keys(row).length > 0) {
+            update.$set = row;
+        }
+
         return new Promise((resolve, reject) => {
             this.getCollection(leaderboardId).
-                insert(row).
-                then((value) => resolve(value.ops[0]));
+                findOneAndUpdate({ id }, update, { upsert: true }).
+                then((r) => {
+                    resolve(r.ok);
+                });
         });
     }
 
@@ -53,6 +71,12 @@ export class Leaderboard {
         cursor.sort({ score: -1 });
         cursor.limit(opts.limit);
         return cursor.toArray();
+    }
+
+    public async position (leaderboardId: string, id: any) {
+        const collection = this.getCollection(leaderboardId);
+        const user = await collection.findOne({ id });
+        return await collection.find({ score: { $gt: user.score } }).count() + 1;
     }
 
     protected getCollection(leaderboardId: string) {

@@ -2,6 +2,8 @@ import { MongoClient, Db } from 'mongodb';
 import { Leaderboard } from './../src/Leaderboard';
 import * as assert from "assert";
 
+const TEST_LEADERBOARD = "daily";
+
 describe("Leaderboard", () => {
     let client: MongoClient;
     let db: Db;
@@ -18,32 +20,63 @@ describe("Leaderboard", () => {
     // close mongodb connection
     after(() => client.close());
 
+    beforeEach(async () => await leaderboard.create(TEST_LEADERBOARD, { ttl: 1 * 60 * 60 * 24 }));
+    afterEach(async () => await leaderboard.destroy(TEST_LEADERBOARD));
+
     it("should create a new leaderboard", async () => {
-        await leaderboard.create("daily", { ttl: 1 * 60 * 60 * 24 });
-        const indexes = await db.collection("lb_daily").indexes();
-        assert.equal(indexes.length, 3);
+        await leaderboard.create(TEST_LEADERBOARD, { ttl: 1 * 60 * 60 * 24 });
+        const indexes = await db.collection(`lb_${TEST_LEADERBOARD}`).indexes();
+        assert.equal(indexes.length, 4);
     });
 
     it("should drop leaderboard", async () => {
-        await leaderboard.create("daily", { ttl: 1 * 60 * 60 * 24 });
-        await leaderboard.destroy("daily");
+        await leaderboard.create("dummy", { ttl: 1 * 60 * 60 * 24 });
+        await leaderboard.destroy("dummy");
     });
 
     it("should record score on leaderboard", async () => {
-        const record = await leaderboard.record("daily", { id: "player1", score: 100 });
-        assert.equal(record.id, "player1");
-        assert.equal(record.score, 100);
+        const record = await leaderboard.record(TEST_LEADERBOARD, { id: "player1", score: 100 });
+        const scores = await leaderboard.list(TEST_LEADERBOARD);
+        assert.equal(scores[0].id, "player1");
+        assert.equal(scores[0].score, 100);
+    });
+
+    it("should increase user's score when triggered twice", async () => {
+        await leaderboard.record(TEST_LEADERBOARD, { id: "player1", score: 100 });
+        const record = await leaderboard.record(TEST_LEADERBOARD, { id: "player2", score: 100 });
+        const record2 = await leaderboard.record(TEST_LEADERBOARD, { id: "player2", score: 100 });
+        const scores = await leaderboard.list(TEST_LEADERBOARD);
+        assert.equal(scores[0].id, "player2");
+        assert.equal(scores[0].score, 200);
+        assert.equal(scores[1].id, "player1");
+        assert.equal(scores[1].score, 100);
+    });
+
+    it("should compute position of user based on its id", async () => {
+        await leaderboard.record(TEST_LEADERBOARD, { id: "player1", score: 10 });
+        await leaderboard.record(TEST_LEADERBOARD, { id: "player2", score: 30 });
+        await leaderboard.record(TEST_LEADERBOARD, { id: "player3", score: 50 });
+        await leaderboard.record(TEST_LEADERBOARD, { id: "player4", score: 25 });
+        await leaderboard.record(TEST_LEADERBOARD, { id: "player5", score: 1 });
+        await leaderboard.record(TEST_LEADERBOARD, { id: "player6", score: 3 });
+
+        assert.equal(await leaderboard.position(TEST_LEADERBOARD, "player3"), 1);
+        assert.equal(await leaderboard.position(TEST_LEADERBOARD, "player2"), 2);
+        assert.equal(await leaderboard.position(TEST_LEADERBOARD, "player4"), 3);
+        assert.equal(await leaderboard.position(TEST_LEADERBOARD, "player1"), 4);
+        assert.equal(await leaderboard.position(TEST_LEADERBOARD, "player6"), 5);
+        assert.equal(await leaderboard.position(TEST_LEADERBOARD, "player5"), 6);
     });
 
     it("should list scores from leaderboard", async () => {
-        const name = "one_second_leaderboatrd";
+        const name = "one_second_leaderboard";
         await leaderboard.create(name, { ttl: 1 });
         await leaderboard.record(name, { id: "player1", score: 1 });
         await leaderboard.record(name, { id: "player2", score: 20 });
         await leaderboard.record(name, { id: "player3", score: 33 });
         await leaderboard.record(name, { id: "player4", score: 10 });
 
-        let scores = await leaderboard.list(name);
+        const scores = await leaderboard.list(name);
         assert.equal(scores[0].score, 33);
         assert.equal(scores[1].score, 20);
         assert.equal(scores[2].score, 10);
@@ -54,4 +87,5 @@ describe("Leaderboard", () => {
         let scoresAfterOneSecond = await leaderboard.list(name);
         assert.equal(scoresAfterOneSecond.length, 0);
     });
+
 });
