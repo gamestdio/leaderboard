@@ -44,7 +44,9 @@ export class Leaderboard {
         return collection.drop();
     }
 
-    public record(leaderboardId: string, row: any & RecordOptions, expireAt?: number): Promise<any> {
+    public record(leaderboardId: string, record: any & RecordOptions, expireAt?: number): Promise<any> {
+        const row = Object.assign({}, record);
+
         const id = row.id;
         delete row.id;
 
