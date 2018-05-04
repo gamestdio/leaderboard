@@ -68,9 +68,23 @@ describe("Leaderboard", () => {
         assert.equal(await leaderboard.position(TEST_LEADERBOARD, "player5"), 6);
     });
 
-    it("should list scores from leaderboard", async () => {
+    it("shouldn't error by creating the same leaderboard multiple times", (done) => {
+        const name = "testing";
+
+        assert.doesNotThrow(async () => {
+            await leaderboard.create(name, { ttl: 1 });
+            await leaderboard.create(name, { ttl: 1 });
+            await leaderboard.create(name, { ttl: 1 });
+            await leaderboard.create(name, { ttl: 1 });
+            await leaderboard.create(name, { ttl: 1 });
+            await leaderboard.destroy(name);
+            done();
+        });
+    });
+
+    it("should list scores from leaderboard (this test takes a minute to resolve)", async () => {
         const name = "one_second_leaderboard";
-        await leaderboard.create(name, { ttl: 1 });
+        await leaderboard.create(name, { ttl: 0.0001 });
         await leaderboard.record(name, { id: "player1", score: 1 });
         await leaderboard.record(name, { id: "player2", score: 20 });
         await leaderboard.record(name, { id: "player3", score: 33 });
@@ -81,11 +95,12 @@ describe("Leaderboard", () => {
         assert.equal(scores[1].score, 20);
         assert.equal(scores[2].score, 10);
         assert.equal(scores[3].score, 1);
-        await leaderboard.destroy(name);
 
-        await new Promise((resolve, reject) => setTimeout(() => resolve(), 1000));
+        await new Promise((resolve, reject) => setTimeout(() => resolve(), 1000 * 60));
         let scoresAfterOneSecond = await leaderboard.list(name);
         assert.equal(scoresAfterOneSecond.length, 0);
-    });
+
+        await leaderboard.destroy(name);
+    }).timeout(1200 * 60);
 
 });

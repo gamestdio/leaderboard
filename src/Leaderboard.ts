@@ -50,7 +50,10 @@ export class Leaderboard {
         const score = row.score;
         delete row.score;
 
-        const update: any = { $inc: { score } }
+        const update: any = {
+            $setOnInsert: { createdAt: new Date() },
+            $inc: { score }
+        };
 
         if (Object.keys(row).length > 0) {
             update.$set = row;
