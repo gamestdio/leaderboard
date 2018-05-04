@@ -56,6 +56,14 @@ leaderboard.list("day").then((rows) => {
 });
 ```
 
+### Getting exact position of player
+
+```typescript
+leaderboard.position("day", "unique user id here").then((position) => {
+    console.log(position) // => 1 ~ 9999...
+}),
+```
+
 ## License
 
 MIT
