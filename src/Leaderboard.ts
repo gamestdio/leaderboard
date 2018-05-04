@@ -1,5 +1,5 @@
-import { ListOptions } from './Leaderboard';
 import { Collection, Db } from 'mongodb';
+import { ListOptions } from './Leaderboard';
 
 export interface CreateOptions {
     ttl?: number;
@@ -87,13 +87,23 @@ export class Leaderboard {
         const user = await collection.findOne({ id });
 
         const [ before, after ] = await Promise.all([
-            collection.find({ id: { $ne: id }, score: { $lte: user.score } }).project({ _id: 0 }).sort({ score: -1 }).limit(opts.limit).toArray(),
-            collection.find({ id: { $ne: id }, score: { $gte: user.score } }).project({ _id: 0 }).sort({ score: 1 }).limit(opts.limit).toArray(),
+            collection.
+                find({ id: { $ne: id }, score: { $lte: user.score } }).
+                project({ _id: 0 }).
+                sort({ score: -1 }).
+                limit(opts.limit).
+                toArray(),
+
+            collection.
+                find({ id: { $ne: id }, score: { $gte: user.score } }).
+                project({ _id: 0 }).
+                sort({ score: 1 }).
+                limit(opts.limit).
+                toArray(),
         ]);
 
         return after.reverse().concat(user).concat(before);
     }
-
 
     protected getCollection(leaderboardId: string) {
         return this.db.collection(`lb_${leaderboardId}`);
