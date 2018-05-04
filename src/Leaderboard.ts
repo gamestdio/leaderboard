@@ -51,8 +51,8 @@ export class Leaderboard {
         delete row.score;
 
         const update: any = {
+            $inc: { score },
             $setOnInsert: { createdAt: new Date() },
-            $inc: { score }
         };
 
         if (Object.keys(row).length > 0) {
@@ -76,7 +76,7 @@ export class Leaderboard {
         return cursor.toArray();
     }
 
-    public async position (leaderboardId: string, id: any) {
+    public async position(leaderboardId: string, id: any) {
         const collection = this.getCollection(leaderboardId);
         const user = await collection.findOne({ id });
         return await collection.find({ score: { $gt: user.score } }).count() + 1;
