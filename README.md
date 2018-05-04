@@ -69,7 +69,7 @@ leaderboard.position("day", "unique user id here").then((position) => {
 ### Get scores surrounding player
 
 ```typescript
-leaderboard.surrounding("day", "unique user id here", { limit: 5 }).then((scores) => {
+leaderboard.surrounding("day", "unique user id here", { limit: 3 }).then((scores) => {
     console.log(scores) ; /* => [
         { id: 'player7', score: 60, createdAt: 2018-05-04T02:54:55.836Z },
         { id: 'player3', score: 50, createdAt: 2018-05-04T02:54:55.825Z },
