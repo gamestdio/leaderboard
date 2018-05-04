@@ -7,6 +7,8 @@ services:
   - mongodb
 install:
   - 'npm install'
+before_script:
+  - sleep 15 # MongoDB takes a while to be available on Travis CI
 script:
   - npm run tslint
   - './node_modules/.bin/_mocha --require ts-node/register test/**Test.ts'
