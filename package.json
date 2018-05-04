@@ -1,7 +1,7 @@
 {
   "name": "@gamestdio/leaderboard",
   "version": "1.0.0",
-  "description": "Leaderboard module for Node.js / MongoDB.",
+  "description": "Minimalist Leaderboard Module for Node.js using MongoDB.",
   "main": "index.js",
   "scripts": {
     "test": "mocha --require ts-node/register test/**Test.ts",
