@@ -1,11 +1,12 @@
 {
   "name": "@gamestdio/leaderboard",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Minimalist Leaderboard Module for Node.js using MongoDB.",
   "main": "index.js",
   "scripts": {
     "test": "mocha --require ts-node/register test/**Test.ts",
-    "tslint": "tslint --project ."
+    "tslint": "tslint --project .",
+    "prepublish": "tsc"
   },
   "repository": {
     "type": "git",
