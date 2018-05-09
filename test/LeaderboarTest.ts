@@ -41,13 +41,13 @@ describe("Leaderboard", () => {
         assert.equal(scores[0].score, 100);
     });
 
-    it("should increase user's score when triggered twice", async () => {
+    it("should increase user's score only if score is higher", async () => {
         await leaderboard.record(TEST_LEADERBOARD, { id: "player1", score: 100 });
         const record = await leaderboard.record(TEST_LEADERBOARD, { id: "player2", score: 100 });
-        const record2 = await leaderboard.record(TEST_LEADERBOARD, { id: "player2", score: 100 });
+        const record2 = await leaderboard.record(TEST_LEADERBOARD, { id: "player2", score: 102 });
         const scores = await leaderboard.list(TEST_LEADERBOARD);
         assert.equal(scores[0].id, "player2");
-        assert.equal(scores[0].score, 200);
+        assert.equal(scores[0].score, 102);
         assert.equal(scores[1].id, "player1");
         assert.equal(scores[1].score, 100);
     });

@@ -1,6 +1,6 @@
 {
   "name": "@gamestdio/leaderboard",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Minimalist Leaderboard Module for Node.js using MongoDB.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

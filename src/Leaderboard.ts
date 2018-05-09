@@ -57,7 +57,12 @@ export class Leaderboard {
 
         return new Promise((resolve, reject) => {
             this.getCollection(leaderboardId).
-                findOneAndUpdate({ id }, update, { upsert: true }).
+                findOneAndUpdate({
+                    id,
+                    score: {
+                        $lt: row.score
+                    }
+                }, update, { upsert: true }).
                 then((r) => resolve(r.ok));
         });
     }
