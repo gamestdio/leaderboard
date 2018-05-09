@@ -50,19 +50,21 @@ export class Leaderboard {
         const id = row.id;
         delete row.id;
 
+        const score = row.score;
+        delete row.score;
+
         const update: any = {
-            $set: row,
+            $max: { score: score },
             $setOnInsert: { createdAt: new Date() },
         };
 
+        if (Object.keys(row).length > 0) {
+            update.$set = row;
+        }
+
         return new Promise((resolve, reject) => {
             this.getCollection(leaderboardId).
-                findOneAndUpdate({
-                    id,
-                    score: {
-                        $lt: row.score
-                    }
-                }, update, { upsert: true }).
+                findOneAndUpdate({ id }, update, { upsert: true }).
                 then((r) => resolve(r.ok));
         });
     }
