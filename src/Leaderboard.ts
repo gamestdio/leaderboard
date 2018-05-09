@@ -50,17 +50,10 @@ export class Leaderboard {
         const id = row.id;
         delete row.id;
 
-        const score = row.score;
-        delete row.score;
-
         const update: any = {
-            $inc: { score },
+            $set: row,
             $setOnInsert: { createdAt: new Date() },
         };
-
-        if (Object.keys(row).length > 0) {
-            update.$set = row;
-        }
 
         return new Promise((resolve, reject) => {
             this.getCollection(leaderboardId).
@@ -70,18 +63,27 @@ export class Leaderboard {
     }
 
     public list(leaderboardId: string, opts: ListOptions = { limit: 10 }) {
-        const collection = this.getCollection(leaderboardId);
-        const cursor = collection.find({});
-        cursor.project({ _id: 0 });
-        cursor.sort({ score: -1 });
-        cursor.limit(opts.limit);
-        return cursor.toArray();
+        return this.getCollection(leaderboardId).
+            find({}).
+            project({ _id: 0 }).
+            sort({ score: -1 }).
+            limit(opts.limit).
+            toArray();
+    }
+
+    public async get(leaderboardId: string, id: any) {
+        return await this.getCollection(leaderboardId).findOne({ id });
     }
 
     public async position(leaderboardId: string, id: any) {
-        const collection = this.getCollection(leaderboardId);
-        const user = await collection.findOne({ id });
-        return await collection.find({ score: { $gt: user.score } }).count() + 1;
+        const user = await this.get(leaderboardId, id);
+        return await this.getCollection(leaderboardId).
+            find({
+                score: {
+                    $gt: user.score
+                }
+            }).
+            count() + 1;
     }
 
     public async surrounding(leaderboardId: string, id: any, opts: ListOptions = { limit: 5 }) {

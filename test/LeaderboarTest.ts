@@ -116,7 +116,21 @@ describe("Leaderboard", () => {
         });
     });
 
-    it("should list scores from leaderboard (this test takes a minute to resolve)", async () => {
+    it("shouldn't error by creating the same leaderboard multiple times", (done) => {
+        const name = "testing";
+
+        assert.doesNotThrow(async () => {
+            await leaderboard.create(name, { ttl: 1 });
+            await leaderboard.create(name, { ttl: 1 });
+            await leaderboard.create(name, { ttl: 1 });
+            await leaderboard.create(name, { ttl: 1 });
+            await leaderboard.create(name, { ttl: 1 });
+            await leaderboard.destroy(name);
+            done();
+        });
+    });
+
+    xit("should list scores from leaderboard (this test takes a minute to resolve)", async () => {
         const name = "one_second_leaderboard";
         await leaderboard.create(name, { ttl: 0.0001 });
         await leaderboard.record(name, { id: "player1", score: 1 });
