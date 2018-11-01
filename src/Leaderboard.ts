@@ -7,6 +7,7 @@ export interface CreateOptions {
 
 export interface ListOptions {
     limit?: number;
+    skip?: number;
 }
 
 export interface RecordOptions {
@@ -69,17 +70,22 @@ export class Leaderboard {
         });
     }
 
-    public list(leaderboardId: string, opts: ListOptions = { limit: 10 }) {
+    public list(leaderboardId: string, opts: ListOptions = { limit: 10, skip: 0 }) {
         return this.getCollection(leaderboardId).
             find({}).
             project({ _id: 0 }).
             sort({ score: -1 }).
+            skip(opts.skip).
             limit(opts.limit).
             toArray();
     }
 
     public async get(leaderboardId: string, id: any) {
         return await this.getCollection(leaderboardId).findOne({ id });
+    }
+
+    public async count(leaderboardId: string) {
+        return await this.getCollection(leaderboardId).countDocuments()
     }
 
     public async position(leaderboardId: string, id: any) {

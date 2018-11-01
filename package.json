@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "test": "mocha --require ts-node/register test/**Test.ts",
+    "test": "mocha --require ts-node/register test/**Test.ts --timeout 100000",
     "tslint": "tslint --project .",
     "prepublish": "tsc"
   },
