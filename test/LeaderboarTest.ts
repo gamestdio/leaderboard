@@ -130,6 +130,41 @@ describe("Leaderboard", () => {
         });
     });
 
+    it("should count positions in a leaderboard", async () => {
+        await leaderboard.record(TEST_LEADERBOARD, { id: "player1", score: 10 });
+        await leaderboard.record(TEST_LEADERBOARD, { id: "player2", score: 30 });
+        await leaderboard.record(TEST_LEADERBOARD, { id: "player3", score: 50 });
+        await leaderboard.record(TEST_LEADERBOARD, { id: "player4", score: 25 });
+        await leaderboard.record(TEST_LEADERBOARD, { id: "player5", score: 1 });
+        await leaderboard.record(TEST_LEADERBOARD, { id: "player6", score: 3 });
+        await leaderboard.record(TEST_LEADERBOARD, { id: "player7", score: 60 });
+
+        let count = await leaderboard.count(TEST_LEADERBOARD)
+        assert.equal(count, 7);
+    });
+
+    it("should return record according skip and limit", async () => {
+        await leaderboard.record(TEST_LEADERBOARD, { id: "player1", score: 10 });
+        await leaderboard.record(TEST_LEADERBOARD, { id: "player2", score: 30 });
+        await leaderboard.record(TEST_LEADERBOARD, { id: "player3", score: 50 });
+        await leaderboard.record(TEST_LEADERBOARD, { id: "player4", score: 25 });
+
+        const all = await leaderboard.list(TEST_LEADERBOARD);
+        assert.equal(all.length, 4)
+
+        const firstHalf = await leaderboard.list(TEST_LEADERBOARD, { limit: 2, skip: 0 });
+        assert.equal(firstHalf[0].score, 50);
+        assert.equal(firstHalf[1].score, 30);
+
+        const secondHalf = await leaderboard.list(TEST_LEADERBOARD, { limit: 2, skip: 2});
+        assert.equal(secondHalf[0].score, 25);
+        assert.equal(secondHalf[1].score, 10);
+
+        const emptyArray = await leaderboard.list(TEST_LEADERBOARD, { limit: 2, skip: 4});
+        assert.equal(emptyArray.length, 0)
+    });
+
+
     xit("should list scores from leaderboard (this test takes a minute to resolve)", async () => {
         const name = "one_second_leaderboard";
         await leaderboard.create(name, { ttl: 0.0001 });
